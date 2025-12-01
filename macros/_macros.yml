@@ -1,0 +1,130 @@
+version: 2
+
+macros:
+  - name: cents_to_dollars
+    description: "Converts price strings like '$125.00' to decimal 125.00 (warehouse-agnostic)"
+    arguments:
+      - name: column_name
+        type: string
+        description: "The column containing the price string"
+  
+  - name: parse_json_amenity
+    description: "Checks if JSON array contains a specific amenity (warehouse-agnostic)"
+    arguments:
+      - name: column_name
+        type: string
+        description: "The column containing the JSON array"
+      - name: amenity_name
+        type: string
+        description: "The amenity name to search for"
+  
+  - name: parse_json_array
+    description: "Parses JSON array string to array type"
+    arguments:
+      - name: column_name
+        type: string
+        description: "The column containing the JSON string"
+  
+  - name: array_contains
+    description: "Checks if array contains a specific value (warehouse-agnostic)"
+    arguments:
+      - name: array_column
+        type: string
+        description: "The array column"
+      - name: value
+        type: string
+        description: "The value to search for"
+  
+  - name: parse_date
+    description: "Parses date string to date type, handling nulls (warehouse-agnostic)"
+    arguments:
+      - name: column_name
+        type: string
+        description: "The column containing the date string"
+  
+  - name: parse_float
+    description: "Parses string to float, handling nulls and empty strings (warehouse-agnostic)"
+    arguments:
+      - name: column_name
+        type: string
+        description: "The column containing the numeric string"
+  
+  - name: warehouse_date_trunc
+    description: "Warehouse-agnostic date_trunc function (Snowflake/BigQuery)"
+    arguments:
+      - name: datepart
+        type: string
+        description: "Date part: 'day', 'week', 'month', 'quarter', 'year'"
+      - name: date_column
+        type: string
+        description: "The date column to truncate"
+  
+  - name: warehouse_date_diff
+    description: "Warehouse-agnostic date_diff function (Snowflake/BigQuery)"
+    arguments:
+      - name: datepart
+        type: string
+        description: "Date part: 'day', 'week', 'month', 'year'"
+      - name: start_date
+        type: string
+        description: "Start date"
+      - name: end_date
+        type: string
+        description: "End date"
+  
+  - name: warehouse_cast
+    description: "Warehouse-agnostic type casting (Snowflake/BigQuery)"
+    arguments:
+      - name: column_name
+        type: string
+        description: "The column to cast"
+      - name: data_type
+        type: string
+        description: "Target data type"
+  
+  - name: warehouse_string_contains
+    description: "Warehouse-agnostic string contains check (case-insensitive)"
+    arguments:
+      - name: column_name
+        type: string
+        description: "The column to search"
+      - name: search_value
+        type: string
+        description: "The value to search for"
+  
+  - name: warehouse_array_contains
+    description: "Warehouse-agnostic array contains check"
+    arguments:
+      - name: array_column
+        type: string
+        description: "The array column"
+      - name: value
+        type: string
+        description: "The value to search for"
+  
+  - name: warehouse_concat
+    description: "Warehouse-agnostic string concatenation"
+    arguments:
+      - name: args
+        type: list
+        description: "Columns/values to concatenate"
+  
+  - name: warehouse_least
+    description: "Warehouse-agnostic least function"
+    arguments:
+      - name: args
+        type: list
+        description: "Values to compare"
+  
+  - name: warehouse_date_add
+    description: "Warehouse-agnostic date addition"
+    arguments:
+      - name: date_column
+        type: string
+        description: "The date column"
+      - name: interval_value
+        type: integer
+        description: "Interval value"
+      - name: interval_unit
+        type: string
+        description: "Interval unit: 'day', 'week', 'month', 'year'"

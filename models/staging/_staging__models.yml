@@ -1,0 +1,83 @@
+version: 2
+
+models:
+  - name: stg_listings
+    description: "Staging model for property listings. Cleans and standardizes listing data."
+    columns:
+      - name: listing_id
+        description: "Unique identifier for the listing"
+        tests:
+          - unique
+          - not_null
+      - name: listing_name
+        description: "Name of the listing"
+      - name: host_id
+        description: "Unique identifier for the host"
+        tests:
+          - not_null
+      - name: property_type
+        description: "Type of property (e.g., Apartment, House)"
+      - name: room_type
+        description: "Type of room (e.g., Entire home, Private room)"
+      - name: neighborhood
+        description: "Neighborhood where listing is located"
+      - name: price_usd
+        description: "Initial price in USD (from listings table)"
+      - name: amenities_json
+        description: "Raw JSON of amenities (for downstream processing)"
+  
+  - name: stg_calendar
+    description: "Staging model for calendar data. Cleans availability, pricing, and reservation data."
+    columns:
+      - name: listing_id
+        description: "Unique identifier for the listing"
+        tests:
+          - not_null
+      - name: date
+        description: "Date of availability"
+        tests:
+          - not_null
+      - name: is_available
+        description: "Boolean indicating if property is available on this date"
+      - name: has_reservation
+        description: "Boolean indicating if there is a reservation on this date"
+      - name: price_usd
+        description: "Price in USD (decimal format)"
+      - name: primary_key
+        description: "Composite primary key (listing_id, date)"
+        tests:
+          - unique
+          - not_null
+  
+  - name: stg_generated_reviews
+    description: "Staging model for generated reviews. Cleans review scores and dates."
+    columns:
+      - name: listing_id
+        description: "Unique identifier for the listing"
+        tests:
+          - not_null
+      - name: review_score
+        description: "Review score (1-5)"
+        tests:
+          - not_null
+          - accepted_values:
+              values: [1, 2, 3, 4, 5]
+      - name: review_date
+        description: "Date of the review"
+        tests:
+          - not_null
+  
+  - name: stg_amenities_changelog
+    description: "Staging model for amenities changelog. Cleans historical amenity changes."
+    columns:
+      - name: listing_id
+        description: "Unique identifier for the listing"
+        tests:
+          - not_null
+      - name: change_at
+        description: "When the amenities list changed"
+        tests:
+          - not_null
+      - name: amenities_array
+        description: "Array of amenities as of this change"
+

@@ -1,0 +1,21 @@
+[sqlfluff]
+dialect = postgres
+templater = dbt
+exclude_rules = L003,L016,L036
+
+[sqlfluff:rules]
+max_line_length = 80
+indent_unit = space
+tab_space_size = 4
+comma_style = trailing
+allow_scalar = True
+
+[sqlfluff:rules:L010]
+capitalisation_policy = lower
+
+[sqlfluff:rules:L014]
+capitalisation_policy = lower
+
+[sqlfluff:rules:L030]
+capitalisation_policy = lower
+

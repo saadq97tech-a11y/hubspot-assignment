@@ -1,0 +1,12 @@
+version: 2
+
+models:
+  - name: int_listings__current_amenities
+    description: "Intermediate model that determines current amenities for each listing on each date based on changelog."
+  
+  - name: int_calendar__daily_metrics
+    description: "Intermediate model that calculates daily revenue and occupancy metrics from calendar data."
+  
+  - name: int_listings__review_metrics
+    description: "Intermediate model that aggregates review metrics per listing."
+

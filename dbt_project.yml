@@ -1,0 +1,53 @@
+name: 'hubspot_rental_analytics'
+version: '1.0.0'
+config-version: 2
+
+profile: 'hubspot_rental_analytics'
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  hubspot_rental_analytics:
+    staging:
+      +materialized: view
+      +schema: staging
+    intermediate:
+      +materialized: ephemeral
+      +schema: intermediate
+    marts:
+      +materialized: table
+      +schema: marts
+      analytics:
+        +schema: analytics
+
+vars:
+  # Warehouse configuration
+  warehouse_type: "snowflake"  # Options: "snowflake" or "bigquery"
+  
+  # Date range parameters
+  analysis_start_date: "2021-01-01"
+  analysis_end_date: "2022-12-31"
+  
+  # Business logic parameters
+  default_minimum_nights: 1
+  default_maximum_nights: 365
+  
+  # Currency
+  currency_code: "USD"
+  
+  # Schema names (for use in SQL/YAML files, not in dbt_project.yml itself)
+  raw_schema: "raw"
+  staging_schema: "staging"
+  intermediate_schema: "intermediate"
+  marts_schema: "marts"
+  analytics_schema: "analytics"

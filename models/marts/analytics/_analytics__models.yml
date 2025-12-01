@@ -1,0 +1,344 @@
+version: 2
+
+models:
+  - name: dim_listings
+    description: |
+      Dimension table for listings (Kimball star schema).
+      Contains static/slowly-changing descriptive attributes about listings.
+      Includes listing-level review metrics (aggregated, not time-varying).
+      Time-varying attributes (amenities per date) are in fact table.
+      
+      Surrogate Key: listing_key
+      Natural Key: listing_id
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: listing_key
+        description: "Surrogate key for the listing (primary key)"
+        data_type: string
+        constraints:
+          - type: not_null
+          - type: unique
+        tests:
+          - unique
+          - not_null
+      - name: listing_id
+        description: "Natural key - unique identifier for the listing"
+        data_type: integer
+        constraints:
+          - type: not_null
+          - type: unique
+        tests:
+          - unique
+          - not_null
+      - name: host_key
+        description: "Foreign key to dim_hosts"
+        data_type: string
+        tests:
+          - relationships:
+              to: ref('dim_hosts')
+              field: host_key
+      - name: listing_name
+        description: "Name of the listing"
+        data_type: string
+      - name: property_type
+        description: "Type of property (e.g., Apartment, House)"
+        data_type: string
+      - name: room_type
+        description: "Type of room (e.g., Entire home, Private room)"
+        data_type: string
+      - name: neighborhood
+        description: "Neighborhood where listing is located"
+        data_type: string
+      - name: accommodates
+        description: "Number of guests this listing accommodates"
+        data_type: integer
+      - name: bedrooms
+        description: "Number of bedrooms"
+        data_type: integer
+      - name: beds
+        description: "Number of beds"
+        data_type: integer
+      - name: bathrooms_text
+        description: "Description of bathrooms"
+        data_type: string
+      - name: minimum_nights
+        description: "Minimum nights required for reservation (listing-level constraint)"
+        data_type: integer
+      - name: maximum_nights
+        description: "Maximum nights allowed for reservation (listing-level constraint)"
+        data_type: integer
+      - name: avg_review_score
+        description: "Average review score for this listing (listing-level aggregate)"
+        data_type: float
+      - name: total_reviews
+        description: "Total number of reviews for this listing (listing-level aggregate)"
+        data_type: integer
+      - name: first_review_date
+        description: "Date of first review for this listing"
+        data_type: date
+      - name: last_review_date
+        description: "Date of most recent review for this listing"
+        data_type: date
+      - name: host_id
+        description: "Natural key reference to host (for convenience)"
+        data_type: integer
+      - name: dbt_updated_at
+        description: "Timestamp when record was last updated by dbt"
+        data_type: timestamp
+
+  - name: dim_dates
+    description: |
+      Dimension table for dates (Kimball star schema).
+      Contains date attributes for time-based analysis.
+      
+      Surrogate Key: date_key
+      Natural Key: date
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: date_key
+        description: "Surrogate key for the date (primary key)"
+        data_type: string
+        constraints:
+          - type: not_null
+          - type: unique
+        tests:
+          - unique
+          - not_null
+      - name: date
+        description: "Natural key - the date"
+        data_type: date
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+      - name: year
+        description: "Year (truncated date)"
+        data_type: date
+      - name: quarter
+        description: "Quarter (truncated date)"
+        data_type: date
+      - name: month
+        description: "Month (truncated date)"
+        data_type: date
+      - name: week
+        description: "Week (truncated date)"
+        data_type: date
+      - name: day_of_week
+        description: "Day of week number (normalized to 0-6, where 0=Sunday, 6=Saturday, warehouse-agnostic)"
+        data_type: integer
+      - name: day_of_month
+        description: "Day of month (1-31)"
+        data_type: integer
+      - name: day_of_year
+        description: "Day of year (1-365/366)"
+        data_type: integer
+      - name: month_number
+        description: "Month number (1-12)"
+        data_type: integer
+      - name: quarter_number
+        description: "Quarter number (1-4)"
+        data_type: integer
+      - name: year_number
+        description: "Year number (e.g., 2021)"
+        data_type: integer
+      - name: week_number
+        description: "Week number (1-53)"
+        data_type: integer
+      - name: is_weekend
+        description: "Boolean indicating if date is a weekend. Note: is_weekday can be derived as NOT is_weekend"
+        data_type: boolean
+      - name: dbt_updated_at
+        description: "Timestamp when record was last updated by dbt"
+        data_type: timestamp
+
+  - name: dim_hosts
+    description: |
+      Dimension table for hosts (Kimball star schema).
+      Contains descriptive attributes about hosts.
+      
+      Surrogate Key: host_key
+      Natural Key: host_id
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: host_key
+        description: "Surrogate key for the host (primary key)"
+        data_type: string
+        constraints:
+          - type: not_null
+          - type: unique
+        tests:
+          - unique
+          - not_null
+      - name: host_id
+        description: "Natural key - unique identifier for the host"
+        data_type: integer
+        constraints:
+          - type: not_null
+          - type: unique
+        tests:
+          - unique
+          - not_null
+      - name: host_name
+        description: "Name of the host"
+        data_type: string
+      - name: host_location
+        description: "Location of the host"
+        data_type: string
+      - name: host_since_date
+        description: "Date when host signed up"
+        data_type: date
+      - name: dbt_updated_at
+        description: "Timestamp when record was last updated by dbt"
+        data_type: timestamp
+
+  - name: dim_neighborhoods
+    description: |
+      Dimension table for neighborhoods (Kimball star schema).
+      Contains descriptive attributes about neighborhoods.
+      
+      Surrogate Key: neighborhood_key
+      Natural Key: neighborhood
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: neighborhood_key
+        description: "Surrogate key for the neighborhood (primary key)"
+        data_type: string
+        constraints:
+          - type: not_null
+          - type: unique
+        tests:
+          - unique
+          - not_null
+      - name: neighborhood
+        description: "Natural key - name of the neighborhood"
+        data_type: string
+        constraints:
+          - type: not_null
+          - type: unique
+        tests:
+          - unique
+          - not_null
+      - name: dbt_updated_at
+        description: "Timestamp when record was last updated by dbt"
+        data_type: timestamp
+
+  - name: fct_listings_daily
+    description: |
+      Fact table at day/listing grain following Kimball star schema methodology.
+      Contains measures (facts) and foreign keys to dimension tables.
+      
+      Grain: One row per listing per day
+      
+      Use Cases:
+      - Period-over-period revenue analysis
+      - Occupancy analysis
+      - Amenity analysis per listing
+      - Review score analysis per listing
+      
+      Joins to dimensions:
+      - dim_listings via listing_key
+      - dim_dates via date_key
+      - dim_hosts via host_key
+      - dim_neighborhoods via neighborhood_key
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: listing_daily_key
+        description: "Surrogate key for the fact record (primary key)"
+        data_type: string
+        constraints:
+          - type: not_null
+          - type: unique
+        tests:
+          - unique
+          - not_null
+      - name: listing_key
+        description: "Foreign key to dim_listings"
+        data_type: string
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_listings')
+              field: listing_key
+      - name: date_key
+        description: "Foreign key to dim_dates"
+        data_type: string
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_dates')
+              field: date_key
+      - name: host_key
+        description: "Foreign key to dim_hosts"
+        data_type: string
+        tests:
+          - relationships:
+              to: ref('dim_hosts')
+              field: host_key
+      - name: neighborhood_key
+        description: "Foreign key to dim_neighborhoods"
+        data_type: string
+        tests:
+          - relationships:
+              to: ref('dim_neighborhoods')
+              field: neighborhood_key
+      - name: listing_id
+        description: "Degenerate dimension - natural key for filtering/grouping (avoids join)"
+        data_type: integer
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+      - name: date
+        description: "Degenerate dimension - natural key for filtering/grouping (avoids join)"
+        data_type: date
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+      - name: revenue_usd
+        description: "Measure: Revenue in USD for this listing on this date (0 if not reserved)"
+        data_type: numeric
+      - name: price_usd
+        description: "Measure: Price in USD for this listing on this date"
+        data_type: numeric
+      - name: has_reservation
+        description: "Measure: Boolean indicating if listing had a reservation on this date (occupancy). Note: is_available removed as redundant."
+        data_type: boolean
+      - name: has_air_conditioning
+        description: "Time-varying attribute: Boolean indicating if listing has air conditioning on this date"
+        data_type: boolean
+      - name: has_lockbox
+        description: "Time-varying attribute: Boolean indicating if listing has a lockbox on this date"
+        data_type: boolean
+      - name: has_keypad
+        description: "Time-varying attribute: Boolean indicating if listing has a keypad on this date"
+        data_type: boolean
+      - name: has_first_aid_kit
+        description: "Time-varying attribute: Boolean indicating if listing has a first aid kit on this date"
+        data_type: boolean
+      - name: has_wifi
+        description: "Time-varying attribute: Boolean indicating if listing has wifi on this date"
+        data_type: boolean
+      - name: has_heating
+        description: "Time-varying attribute: Boolean indicating if listing has heating on this date"
+        data_type: boolean
+      - name: has_kitchen
+        description: "Time-varying attribute: Boolean indicating if listing has a kitchen on this date"
+        data_type: boolean
+      - name: dbt_updated_at
+        description: "Timestamp when record was last updated by dbt"
+        data_type: timestamp

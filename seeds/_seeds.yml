@@ -1,0 +1,60 @@
+version: 2
+
+seeds:
+  - name: listings
+    description: "Property listings with host information, amenities, and review metadata"
+    config:
+      quote_columns: true
+    columns:
+      - name: id
+        description: "Unique ID for this listing. Primary Key."
+        tests:
+          - unique
+          - not_null
+      - name: amenities
+        description: "Array of amenities available for guests (JSON parseable)"
+  
+  - name: calendar
+    description: "Daily availability, reservations, and pricing for listings"
+    config:
+      quote_columns: true
+    columns:
+      - name: listing_id
+        description: "Unique ID for the listing"
+        tests:
+          - not_null
+      - name: date
+        description: "Date of availability"
+        tests:
+          - not_null
+  
+  - name: generated_reviews
+    description: "Generated review scores and dates for listings"
+    config:
+      quote_columns: true
+    columns:
+      - name: listing_id
+        description: "Unique ID for the listing"
+        tests:
+          - not_null
+      - name: review_score
+        description: "Review score (1-5)"
+        tests:
+          - not_null
+          - accepted_values:
+              values: [1, 2, 3, 4, 5]
+  
+  - name: amenities_changelog
+    description: "Historical changes to amenities for listings"
+    config:
+      quote_columns: true
+    columns:
+      - name: listing_id
+        description: "Unique ID for the listing"
+        tests:
+          - not_null
+      - name: change_at
+        description: "When the amenities list changed"
+        tests:
+          - not_null
+
