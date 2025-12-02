@@ -1,0 +1,71 @@
+version: 2
+
+models:
+  - name: mart_monthly_revenue_by_amenity
+    description: |
+      Business mart: Monthly revenue aggregated by amenity flags.
+      Pre-computed aggregation for Business Question #1 (Amenity Revenue Analysis).
+      Grain: One row per month per amenity combination.
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: month_amenity_key
+        description: "Surrogate key (primary key)"
+        data_type: string
+        constraints:
+          - type: not_null
+          - type: unique
+      - name: month
+        description: "Month (truncated date)"
+        data_type: date
+        constraints:
+          - type: not_null
+      - name: has_air_conditioning
+        description: "Boolean indicating if listing has air conditioning"
+        data_type: boolean
+        constraints:
+          - type: not_null
+      - name: total_revenue_usd
+        description: "Total revenue in USD for this month/amenity combination"
+        data_type: numeric
+      - name: month_total_revenue_usd
+        description: "Total revenue in USD for the entire month"
+        data_type: numeric
+      - name: revenue_percentage
+        description: "Percentage of monthly revenue for this amenity combination"
+        data_type: numeric
+      - name: total_days
+        description: "Total days in this month/amenity combination"
+        data_type: integer
+      - name: reserved_days
+        description: "Number of reserved days in this month/amenity combination"
+        data_type: integer
+      - name: dbt_updated_at
+        description: "Timestamp when record was last updated by dbt"
+        data_type: timestamp
+
+  - name: mart_listing_max_stay_duration
+    description: |
+      Business mart: Maximum stay duration per listing.
+      Pre-computed aggregation for Business Question #3A & #3B (Long Stay / Picky Renter Analysis).
+      Grain: One row per listing.
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: listing_id
+        description: "Natural key - unique identifier for the listing (primary key)"
+        data_type: integer
+        constraints:
+          - type: not_null
+          - type: unique
+      - name: max_possible_stay_days
+        description: "Maximum number of consecutive days one could stay in this listing"
+        data_type: integer
+        constraints:
+          - type: not_null
+      - name: dbt_updated_at
+        description: "Timestamp when record was last updated by dbt"
+        data_type: timestamp
+

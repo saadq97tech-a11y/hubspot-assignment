@@ -1,0 +1,28 @@
+version: 2
+
+models:
+  # Intermediate/prep transformations (ephemeral, used by dimensional model)
+  - name: int_listings__current_amenities
+    description: |
+      Prep model that determines current amenities for each listing on each date based on changelog.
+      Performs point-in-time lookup to get amenities as they existed on each date.
+      Used by fct_listings_daily for time-varying amenity flags.
+    config:
+      materialized: ephemeral
+  
+  - name: int_calendar__daily_metrics
+    description: |
+      Prep model that calculates daily revenue and occupancy metrics from calendar data.
+      Calculates revenue_usd (price if reserved, 0 if not).
+      Used by fct_listings_daily for measures.
+    config:
+      materialized: ephemeral
+  
+  - name: int_listings__review_metrics
+    description: |
+      Prep model that aggregates review metrics per listing.
+      Calculates total_reviews, avg_review_score, first_review_date, last_review_date.
+      Used by dim_listings for review attributes.
+    config:
+      materialized: ephemeral
+

@@ -15,17 +15,20 @@ models/
 │   ├── stg_calendar.sql
 │   ├── stg_generated_reviews.sql
 │   └── stg_amenities_changelog.sql
-├── intermediate/    # Purpose-built transformation steps
-│   ├── int_listings__current_amenities.sql
-│   ├── int_calendar__daily_metrics.sql
-│   └── int_listings__review_metrics.sql
-└── marts/
-    └── analytics/   # Business-conformed final tables (star schema)
-        ├── dim_listings.sql       # Dimension: Listing attributes
-        ├── dim_dates.sql          # Dimension: Date attributes
-        ├── dim_hosts.sql          # Dimension: Host attributes
-        ├── dim_neighborhoods.sql  # Dimension: Neighborhood attributes
-        └── fct_listings_daily.sql # Fact: Daily listing metrics
+├── modelling/        # Dimensional model (Kimball star schema)
+│   ├── prep/                   # Prep transformations (ephemeral)
+│   │   ├── int_listings__current_amenities.sql
+│   │   ├── int_calendar__daily_metrics.sql
+│   │   └── int_listings__review_metrics.sql
+│   ├── dim_*.sql              # Dimension tables
+│   │   ├── dim_listings.sql
+│   │   ├── dim_dates.sql
+│   │   ├── dim_hosts.sql
+│   │   └── dim_neighborhoods.sql
+│   └── fct_listings_daily.sql # Fact table
+└── marts/            # Business-specific aggregated marts
+    ├── mart_monthly_revenue_by_amenity.sql
+    └── mart_listing_max_stay_duration.sql
 
 analyses/            # Business question queries
 ├── business_question_1_amenity_revenue.sql
@@ -57,12 +60,13 @@ macros/              # Reusable SQL functions
 - **stg_generated_reviews**: Standardizes review scores and dates
 - **stg_amenities_changelog**: Cleans amenities JSON changelog
 
-### Intermediate Layer
+### Modelling Layer (Kimball Star Schema)
+**Prep Transformations** (ephemeral, within modelling/prep):
 - **int_listings__current_amenities**: Determines current amenities for each listing-date using changelog
 - **int_calendar__daily_metrics**: Calculates daily revenue and occupancy metrics
 - **int_listings__review_metrics**: Aggregates review metrics per listing
 
-### Marts Layer (Star Schema)
+**Dimension Tables**:
 
 #### Dimensions (Descriptive Attributes)
 - **dim_listings**: Listing attributes (property_type, room_type, beds, review metrics, etc.)
@@ -70,13 +74,17 @@ macros/              # Reusable SQL functions
 - **dim_hosts**: Host attributes (host_name, location, signup_date)
 - **dim_neighborhoods**: Neighborhood reference
 
-#### Facts (Measurements)
+**Fact Table**:
 - **fct_listings_daily**: Daily listing metrics (grain: listing × date)
-  - **Measures**: revenue_usd, price_usd, has_reservation, is_available
+  - **Measures**: revenue_usd, price_usd, has_reservation
   - **Time-varying attributes**: has_air_conditioning, has_wifi, has_kitchen, etc. (7 amenity flags)
   - **Foreign keys**: listing_key, date_key, host_key, neighborhood_key
 
 **Grain**: One row per listing per date
+
+### Marts Layer (Business-Specific Aggregations)
+- **mart_monthly_revenue_by_amenity**: Pre-computed monthly revenue by amenity (for Business Question #1)
+- **mart_listing_max_stay_duration**: Pre-computed maximum stay duration per listing (for Business Question #3A/3B)
 
 ---
 
@@ -113,8 +121,9 @@ Query: `analyses/business_question_2_neighborhood_pricing.sql`
 
 ### 3. Materializations 💾
 - **Staging**: `view` - Always fresh, minimal storage
-- **Intermediate**: `ephemeral` - Not materialized, compiled into downstream models
-- **Marts**: `table` - Fast query performance, materialized for BI tools
+- **Modelling (prep/)**: `ephemeral` - Prep transformations not materialized, compiled into downstream models
+- **Modelling (dim/fct)**: `table` - Dimensional model materialized for performance
+- **Marts**: `table` - Business-specific aggregations, fast query performance
 
 ### 4. Amenity Handling (Hybrid Approach) 🏠
 **Why**: Balance between simplicity and flexibility
@@ -125,9 +134,10 @@ Query: `analyses/business_question_2_neighborhood_pricing.sql`
 
 ### 5. Naming Conventions 📝
 - Staging: `stg_<source>__<entity>`
-- Intermediate: `int_<entity>__<transformation>`
+- Prep (in modelling/prep): `int_<entity>__<transformation>`
 - Dimensions: `dim_<entity>`
 - Facts: `fct_<entity>_<grain>`
+- Business Marts: `mart_<business_question>`
 - Macros: `warehouse_<function>` for agnostic functions
 
 ### 6. Key Implementation Decisions
@@ -179,18 +189,22 @@ dbt docs generate && dbt docs serve  # View documentation
 
 ## Business Questions Answered
 
-All queries in `analyses/` folder, ready to run:
+All queries in `analyses/` folder use pre-computed marts for performance:
 
 1. **Amenity Revenue** (`business_question_1_amenity_revenue.sql`)
+   - Uses: `mart_monthly_revenue_by_amenity`
    - Monthly revenue by air conditioning presence
 
 2. **Neighborhood Pricing** (`business_question_2_neighborhood_pricing.sql`)
+   - Uses: `fct_listings_daily` + `dim_neighborhoods` (specific date comparison)
    - Year-over-year price change by neighborhood
 
 3. **Maximum Stay Duration** (`business_question_3a_max_duration_stay.sql`)
+   - Uses: `mart_listing_max_stay_duration`
    - Longest possible stay per listing
 
 4. **Maximum Stay with Amenities** (`business_question_3b_max_duration_with_amenities.sql`)
+   - Uses: `mart_listing_max_stay_duration` + amenity filter
    - Longest stay for listings with lockbox AND first aid kit
 
 ---
@@ -215,7 +229,7 @@ All warehouse-specific functions use custom macros for compatibility:
 
 ## Key Features
 
-✅ **Simple**: Clean 3-layer structure (staging → intermediate → marts)  
+✅ **Simple**: Clean 3-layer structure (staging → modelling → marts)  
 ✅ **Scalable**: Star schema, modular design, reusable macros  
 ✅ **Production-Ready**: Tests, data contracts, documentation, parameterized, multi-warehouse  
 ✅ **Best Practices**: Follows dbt Labs standards and Kimball methodology  
