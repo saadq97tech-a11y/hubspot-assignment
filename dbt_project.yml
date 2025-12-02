@@ -21,14 +21,14 @@ models:
     staging:
       +materialized: view
       +schema: staging
-    intermediate:
-      +materialized: ephemeral
-      +schema: intermediate
+    modelling:
+      +materialized: table
+      +schema: modelling
+      prep:
+        +materialized: ephemeral
     marts:
       +materialized: table
       +schema: marts
-      analytics:
-        +schema: analytics
 
 vars:
   # Warehouse configuration
@@ -48,6 +48,5 @@ vars:
   # Schema names (for use in SQL/YAML files, not in dbt_project.yml itself)
   raw_schema: "raw"
   staging_schema: "staging"
-  intermediate_schema: "intermediate"
+  modelling_schema: "modelling"
   marts_schema: "marts"
-  analytics_schema: "analytics"
